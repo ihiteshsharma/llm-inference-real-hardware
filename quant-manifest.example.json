@@ -1,0 +1,18 @@
+{
+  "model_repo": "Qwen/Qwen2.5-3B-Instruct-GGUF",
+  "repository_revision": "7dabda4d13d513e3e842b20f0d435c732f172cbe",
+  "llama_cpp_release": "b10217",
+  "llama_cpp_commit": "ddd4ec1",
+  "thresholds": {
+    "min_quality_pass_rate": 0.8,
+    "max_ttft_ms_p95": 1500,
+    "max_tpot_ms_p95": 120
+  },
+  "variants": [
+    {"name": "Q4_K_M", "filename": "qwen2.5-3b-instruct-q4_k_m.gguf", "sha256": "626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d", "size_bytes": 2104932768},
+    {"name": "Q5_K_M", "filename": "qwen2.5-3b-instruct-q5_k_m.gguf", "sha256": "2c63dde5f2c9ab1fd64d47dee2d34dade6ba9ff62442d1d20b5342310c982081", "size_bytes": 2438740384},
+    {"name": "Q6_K", "filename": "qwen2.5-3b-instruct-q6_k.gguf", "sha256": "12da1a5d3fa6905111d8798b00ed49e0f6425441598c8c41bb37a2c36d49d0f3", "size_bytes": 2793410976},
+    {"name": "Q8_0", "filename": "qwen2.5-3b-instruct-q8_0.gguf", "sha256": "6dcc22694c8654b045ec40bbe350212b88893fd9010e8474bae5b19a43578ba1", "size_bytes": 3616088480}
+  ]
+}
+
