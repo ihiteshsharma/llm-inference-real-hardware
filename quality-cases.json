@@ -1,0 +1,33 @@
+[
+  {
+    "id": "q1",
+    "prompt": "Return only the JSON object {\"status\":\"ok\",\"count\":3}.",
+    "pass_criterion": "The response parses as JSON and exactly equals the requested object."
+  },
+  {
+    "id": "q2",
+    "prompt": "A service committed a ticket creation, but the client lost the response. Explain in two sentences why retry safety needs an idempotency key.",
+    "pass_criterion": "The answer connects an ambiguous outcome to preventing duplicate side effects."
+  },
+  {
+    "id": "q3",
+    "prompt": "Sort these version strings lexicographically and return only a comma-separated list: v2, v10, v1.",
+    "pass_criterion": "The response is exactly v1, v10, v2."
+  },
+  {
+    "id": "q4",
+    "prompt": "What is 17 multiplied by 23? Return only the integer.",
+    "pass_criterion": "The response is exactly 391."
+  },
+  {
+    "id": "q5",
+    "prompt": "State one reason p95 time-to-first-token can worsen while token generation speed stays stable. Use one sentence.",
+    "pass_criterion": "The answer identifies queueing or prefill pressure without claiming decode speed must change."
+  },
+  {
+    "id": "q6",
+    "prompt": "Rewrite without changing meaning: The retry returned the durable result instead of creating another ticket.",
+    "pass_criterion": "The answer preserves both replay of the prior result and absence of a duplicate ticket."
+  }
+]
+
