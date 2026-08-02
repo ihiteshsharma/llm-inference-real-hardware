@@ -9,6 +9,10 @@ from pathlib import Path
 def select(manifest, observations):
     thresholds = manifest["thresholds"]
     by_name = {item["name"]: item for item in observations}
+    expected = [item["name"] for item in manifest["variants"]]
+    observed_names = [name for name in expected if name in by_name]
+    missing = [name for name in expected if name not in by_name]
+    coverage_complete = not missing
     candidates = []
     for variant in manifest["variants"]:
         observed = by_name.get(variant["name"])
@@ -24,7 +28,34 @@ def select(manifest, observations):
         (item for item in candidates if item["passed"]),
         key=lambda item: item["size_bytes"],
     )
-    return {"selected": winners[0]["name"] if winners else None, "variants": candidates}
+    selected = winners[0]["name"] if coverage_complete and winners else None
+    if not coverage_complete:
+        verdict = "incomplete"
+        conclusion = (
+            "Observed variants were evaluated individually, but cannot select "
+            "a quantization until every manifest variant is observed."
+        )
+    elif selected:
+        verdict = "passed"
+        conclusion = (
+            f"{selected} is the smallest fully observed variant passing every gate."
+        )
+    else:
+        verdict = "failed"
+        conclusion = "No fully observed variant passes every declared gate."
+    return {
+        "verdict": verdict,
+        "checks": {
+            "coverage_complete": coverage_complete,
+            "passing_variant_found": bool(winners),
+        },
+        "observed_variants": observed_names,
+        "missing_variants": missing,
+        "coverage_complete": coverage_complete,
+        "selected": selected,
+        "variants": candidates,
+        "conclusion": conclusion,
+    }
 
 
 def self_check():
@@ -66,4 +97,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
