@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small OpenAI-compatible streaming benchmark. Scaffold only; not yet executed."""
+"""Small OpenAI-compatible streaming benchmark with explicit SLO verdicts."""
 
 import argparse
 import concurrent.futures
@@ -20,6 +20,8 @@ def percentile(values, fraction):
 
 def request_once(base_url, model, prompt, max_tokens, submitted_ns, request_id):
     started_ns = time.monotonic_ns()
+    if submitted_ns is None:
+        submitted_ns = started_ns
     payload = json.dumps({
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
@@ -67,7 +69,7 @@ def request_once(base_url, model, prompt, max_tokens, submitted_ns, request_id):
         error = f"{type(exc).__name__}: {exc}"
     ended_ns = time.monotonic_ns()
     ttft_ms = (
-        (first_chunk_ns - started_ns) / 1_000_000
+        (first_chunk_ns - submitted_ns) / 1_000_000
         if first_chunk_ns is not None else None
     )
     generation_ms = (
@@ -95,18 +97,20 @@ def request_once(base_url, model, prompt, max_tokens, submitted_ns, request_id):
 def run(args):
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    submitted = [time.monotonic_ns() for _ in range(args.requests)]
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=args.concurrency
     ) as pool:
         futures = [
             pool.submit(
                 request_once, args.base_url, args.model, args.prompt,
-                args.max_tokens, submitted[i], f"r{i + 1:04d}"
+                args.max_tokens, None, f"r{i + 1:04d}"
             )
             for i in range(args.requests)
         ]
-        records = [future.result() for future in futures]
+        records = [
+            {**future.result(), "offered_concurrency": args.concurrency}
+            for future in futures
+        ]
     output.write_text(
         "".join(json.dumps(record, sort_keys=True) + "\n" for record in records)
     )
@@ -123,6 +127,15 @@ def summarize(records, max_ttft_ms, max_tpot_ms):
         and item["ttft_ms"] <= max_ttft_ms
         and item["tpot_ms"] <= max_tpot_ms
     ]
+    checks = {
+        "all_requests_completed": len(successful) == len(records),
+        "all_timings_known": (
+            len(known_ttft) == len(successful)
+            and len(known_tpot) == len(successful)
+        ),
+        "all_completed_requests_meet_slo": len(compliant) == len(successful),
+    }
+    verdict = "passed" if records and all(checks.values()) else "failed"
     return {
         "submitted": len(records),
         "completed": len(successful),
@@ -133,6 +146,17 @@ def summarize(records, max_ttft_ms, max_tpot_ms):
         "tpot_ms_p50": percentile(known_tpot, 0.50),
         "tpot_ms_p95": percentile(known_tpot, 0.95),
         "e2e_ms_p95": percentile([x["e2e_ms"] for x in successful], 0.95),
+        "thresholds": {
+            "max_ttft_ms": max_ttft_ms,
+            "max_tpot_ms": max_tpot_ms,
+        },
+        "checks": checks,
+        "verdict": verdict,
+        "conclusion": (
+            "Every request met the declared TTFT and TPOT limits."
+            if verdict == "passed"
+            else "This load is outside the demonstrated SLO-compliant envelope."
+        ),
     }
 
 
@@ -141,6 +165,40 @@ def load_records(path):
         json.loads(line) for line in Path(path).read_text().splitlines()
         if line.strip()
     ]
+
+
+def compare(paths, max_ttft_ms, max_tpot_ms):
+    runs = []
+    for path in paths:
+        records = load_records(path)
+        offered = {item.get("offered_concurrency") for item in records}
+        if len(offered) != 1 or None in offered:
+            raise ValueError(f"{path} must contain one offered_concurrency value")
+        runs.append({
+            "source": Path(path).name,
+            "offered_concurrency": offered.pop(),
+            **summarize(records, max_ttft_ms, max_tpot_ms),
+        })
+    runs.sort(key=lambda item: item["offered_concurrency"])
+    passing = [item for item in runs if item["verdict"] == "passed"]
+    highest = max(
+        (item["offered_concurrency"] for item in passing), default=None
+    )
+    checks = {
+        "compliant_load_found": highest is not None,
+        "overload_observed": any(item["verdict"] == "failed" for item in runs),
+    }
+    return {
+        "verdict": "passed" if highest is not None else "failed",
+        "checks": checks,
+        "highest_slo_compliant_concurrency": highest,
+        "runs": runs,
+        "conclusion": (
+            f"The highest observed SLO-compliant concurrency is {highest}."
+            if highest is not None
+            else "No tested concurrency demonstrated SLO compliance."
+        ),
+    }
 
 
 def self_check():
@@ -174,6 +232,11 @@ def parser():
     report.add_argument("path")
     report.add_argument("--max-ttft-ms", type=float, required=True)
     report.add_argument("--max-tpot-ms", type=float, required=True)
+    comparison = sub.add_parser("compare")
+    comparison.add_argument("paths", nargs="+")
+    comparison.add_argument("--max-ttft-ms", type=float, required=True)
+    comparison.add_argument("--max-tpot-ms", type=float, required=True)
+    comparison.add_argument("--output", required=True)
     return root
 
 
@@ -187,6 +250,10 @@ def main():
         print(json.dumps(summarize(
             load_records(args.path), args.max_ttft_ms, args.max_tpot_ms
         ), indent=2))
+    elif args.command == "compare":
+        result = compare(args.paths, args.max_ttft_ms, args.max_tpot_ms)
+        Path(args.output).write_text(json.dumps(result, indent=2) + "\n")
+        print(json.dumps(result, indent=2))
     else:
         parser().print_help()
 
