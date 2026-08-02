@@ -1,0 +1,57 @@
+{
+  "verdict": "passed",
+  "checks": {
+    "compliant_load_found": true,
+    "overload_observed": true,
+    "recovery_passed": true
+  },
+  "highest_slo_compliant_concurrency": 2,
+  "recovery_concurrency": 2,
+  "runs": [
+    {
+      "offered_concurrency": 1,
+      "submitted": 8,
+      "completed": 8,
+      "goodput_requests": 8,
+      "ttft_ms_p95": 123.939,
+      "tpot_ms_p95": 27.666,
+      "e2e_ms_p95": 1140.612,
+      "verdict": "passed"
+    },
+    {
+      "offered_concurrency": 2,
+      "submitted": 8,
+      "completed": 8,
+      "goodput_requests": 8,
+      "ttft_ms_p95": 1131.052,
+      "tpot_ms_p95": 27.057,
+      "e2e_ms_p95": 2161.068,
+      "verdict": "passed"
+    },
+    {
+      "offered_concurrency": 4,
+      "submitted": 8,
+      "completed": 8,
+      "goodput_requests": 2,
+      "ttft_ms_p95": 3066.273,
+      "tpot_ms_p95": 26.951,
+      "e2e_ms_p95": 3980.804,
+      "verdict": "failed"
+    },
+    {
+      "offered_concurrency": 8,
+      "submitted": 8,
+      "completed": 8,
+      "goodput_requests": 2,
+      "ttft_ms_p95": 7036.714,
+      "tpot_ms_p95": 25.9,
+      "e2e_ms_p95": 7957.952,
+      "verdict": "failed"
+    }
+  ],
+  "thresholds": {
+    "max_ttft_ms": 1500.0,
+    "max_tpot_ms": 120.0
+  },
+  "conclusion": "With one server slot, concurrency 2 was the highest observed passing point; concurrency 4 overloaded the TTFT gate, and a return to 2 passed."
+}
