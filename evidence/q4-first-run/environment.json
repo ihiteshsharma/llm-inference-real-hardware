@@ -1,0 +1,31 @@
+{
+  "executed_at_utc": "2026-08-02T15:12:32Z",
+  "os": "macOS 26.5.2 (Darwin 25.5.0)",
+  "architecture": "arm64",
+  "cpu": "Apple M2 Pro",
+  "logical_cpus": 10,
+  "memory_bytes": 17179869184,
+  "benchmark_client_python_version": "3.14.6",
+  "llama_cpp_release": "b10217",
+  "llama_cpp_commit": "ddd4ec142",
+  "model_filename": "qwen2.5-3b-instruct-q4_k_m.gguf",
+  "model_sha256": "626b4a6678b86442240e33df819e00132d3ba7dddfe1cdc4fbb18e0a9615c62d",
+  "model_size_bytes": 2104932768,
+  "threads": 4,
+  "gpu_layers": 0,
+  "memory_measurement": "macOS vmmap -summary physical footprint after warmup",
+  "control": {
+    "ctx_size": 4096,
+    "parallel": 1,
+    "server_slots": 1,
+    "context_per_slot": 4096,
+    "physical_footprint_display": "2.0G"
+  },
+  "expanded": {
+    "ctx_size": 16384,
+    "parallel": 4,
+    "server_slots": 4,
+    "context_per_slot": 4096,
+    "physical_footprint_display": "2.5G"
+  }
+}
