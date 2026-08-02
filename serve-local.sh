@@ -9,6 +9,7 @@ PORT="${PORT:-8080}"
 CTX_SIZE="${CTX_SIZE:-4096}"
 PARALLEL="${PARALLEL:-1}"
 THREADS="${THREADS:-4}"
+GPU_LAYERS="${GPU_LAYERS:-0}"
 ALIAS="${ALIAS:-qwen2.5-3b-instruct}"
 
 if [ "$HOST" != "127.0.0.1" ]; then
@@ -24,6 +25,6 @@ exec "$LLAMA_SERVER" \
   --ctx-size "$CTX_SIZE" \
   --parallel "$PARALLEL" \
   --threads "$THREADS" \
+  --n-gpu-layers "$GPU_LAYERS" \
   --metrics \
   --perf
-
