@@ -1,0 +1,23 @@
+{
+  "verdict": "passed",
+  "checks": {
+    "control_compliant_load_found": true,
+    "expanded_compliant_load_found": true,
+    "overload_observed_in_both_envelopes": true,
+    "recovery_passed_in_both_envelopes": true,
+    "quantization_scope_is_explicitly_incomplete": true,
+    "q4_quality_failure_is_visible": true
+  },
+  "control_highest_slo_compliant_concurrency": 2,
+  "expanded_highest_slo_compliant_concurrency": 4,
+  "quantization": {
+    "verdict": "incomplete",
+    "selected": null,
+    "observed_variants": ["Q4_K_M"],
+    "missing_variants": ["Q5_K_M", "Q6_K", "Q8_0"],
+    "q4_quality_pass_rate": 0.666667,
+    "minimum_quality_pass_rate": 0.8,
+    "q4_passed_all_gates": false
+  },
+  "conclusion": "On this machine and workload, the Q4 model demonstrated bounded CPU serving envelopes and recoverable TTFT overload. Q4 failed the declared quality floor, and one observed quantization cannot establish a winner."
+}
